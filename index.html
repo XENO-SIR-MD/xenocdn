@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="XENO SIR - Encrypted Upload Protocol.">
+  <meta property="og:title" content="XENO SIR Protocol">
+  <meta property="og:description" content="Secure and encrypted file transfer by XENO SIR.">
+  <meta property="og:image" content="https://i.ibb.co/1YLm9csg/image.jpg">
+  <title>XENO SIR || SECURE TRANSFER</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+
+    body {
+      background-color: #050505;
+      color: #00ff41;
+      font-family: 'Fira Code', monospace;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Matrix Rain Effect Container */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      opacity: 0.15;
+    }
+
+    .terminal-container {
+      background: rgba(10, 10, 10, 0.85);
+      border: 1px solid #00ff41;
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .terminal-header {
+      background: #00ff41;
+      color: #050505;
+      padding: 0.5rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .glitch {
+      position: relative;
+      color: #00ff41;
+      text-shadow: 0 0 5px #00ff41;
+    }
+
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #050505;
+    }
+
+    .glitch::before {
+      left: 2px;
+      text-shadow: -2px 0 red;
+      clip: rect(24px, 550px, 90px, 0);
+      animation: glitch-anim-2 3s infinite linear alternate-reverse;
+    }
+
+    .glitch::after {
+      left: -2px;
+      text-shadow: -2px 0 blue;
+      clip: rect(85px, 550px, 140px, 0);
+      animation: glitch-anim 2.5s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch-anim {
+      0% {
+        clip: rect(10px, 9999px, 83px, 0);
+      }
+
+      20% {
+        clip: rect(62px, 9999px, 16px, 0);
+      }
+
+      40% {
+        clip: rect(3px, 9999px, 86px, 0);
+      }
+
+      60% {
+        clip: rect(74px, 9999px, 13px, 0);
+      }
+
+      80% {
+        clip: rect(54px, 9999px, 4px, 0);
+      }
+
+      100% {
+        clip: rect(23px, 9999px, 34px, 0);
+      }
+    }
+
+    @keyframes glitch-anim-2 {
+      0% {
+        clip: rect(65px, 9999px, 100px, 0);
+      }
+
+      20% {
+        clip: rect(3px, 9999px, 63px, 0);
+      }
+
+      40% {
+        clip: rect(82px, 9999px, 21px, 0);
+      }
+
+      60% {
+        clip: rect(12px, 9999px, 93px, 0);
+      }
+
+      80% {
+        clip: rect(41px, 9999px, 42px, 0);
+      }
+
+      100% {
+        clip: rect(76px, 9999px, 9px, 0);
+      }
+    }
+
+    .dropzone {
+      border: 2px dashed #008f11;
+      background: rgba(0, 255, 65, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: #00ff41;
+      background: rgba(0, 255, 65, 0.1);
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+    }
+
+    .btn-hacker {
+      background: transparent;
+      border: 1px solid #00ff41;
+      color: #00ff41;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+      overflow: hidden;
+      transition: 0.2s;
+    }
+
+    .btn-hacker:hover {
+      background: #00ff41;
+      color: #050505;
+      box-shadow: 0 0 10px #00ff41, 0 0 40px #00ff41, 0 0 80px #00ff41;
+    }
+
+    .typing-text {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid #00ff41;
+      animation: typing 3s steps(40, end), blink-caret .75s step-end infinite;
+    }
+
+    @keyframes typing {
+      from {
+        width: 0
+      }
+
+      to {
+        width: 100%
+      }
+    }
+
+    @keyframes blink-caret {
+
+      from,
+      to {
+        border-color: transparent
+      }
+
+      50% {
+        border-color: #00ff41;
+      }
+    }
+
+    .scanline {
+      width: 100%;
+      height: 100px;
+      z-index: 10;
+      position: absolute;
+      pointer-events: none;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 65, 0.2) 50%, rgba(0, 0, 0, 0) 100%);
+      opacity: 0.1;
+      animation: scanline 6s linear infinite;
+    }
+
+    @keyframes scanline {
+      0% {
+        top: -100px;
+      }
+
+      100% {
+        top: 100vh;
+      }
+    }
+
+    .preview-box {
+      border: 1px solid #008f11;
+      position: relative;
+    }
+
+    .preview-box::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      bottom: -1px;
+      border: 1px solid #00ff41;
+      clip-path: polygon(0 0, 10px 0, 0 10px, 0 0, 100% 0, 100% 10px, calc(100% - 10px) 0, 100% 0, 100% 100%, calc(100% - 10px) 100%, 100% calc(100% - 10px), 100% 100%, 0 100%, 0 calc(100% - 10px), 10px 100%, 0 100%);
+    }
+
+    .link-output {
+      background: #0a0a0a;
+      border: 1px solid #004d09;
+      color: #00ff41;
+      font-size: 0.85rem;
+    }
+
+    .link-output:focus {
+      outline: none;
+      border-color: #00ff41;
+      box-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+    }
+
+    /* Toast */
+    #toast {
+      border: 1px solid #00ff41;
+      background: #050505;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #050505;
+      border-left: 1px solid #004d09;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #008f11;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00ff41;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen relative flex flex-col pt-8 md:pt-16 pb-8 items-center px-4">
+
+  <div class="scanline"></div>
+  <canvas id="matrix-canvas"></canvas>
+
+  <!-- Toast Notification -->
+  <div id="toast"
+    class="fixed top-8 right-8 z-50 hidden px-6 py-3 font-bold uppercase tracking-wider text-sm transition-all transform duration-300 translate-y-[-20px] opacity-0">
+    <span id="toast-msg"></span>
+  </div>
+
+  <div class="w-full max-w-3xl terminal-container rounded-sm flex flex-col relative z-10">
+    <!-- Terminal Header -->
+    <div class="terminal-header items-center">
+      <div class="flex items-center space-x-2">
+        <span class="block w-3 h-3 bg-red-500 rounded-full"></span>
+        <span class="block w-3 h-3 bg-yellow-500 rounded-full"></span>
+        <span class="block w-3 h-3 bg-green-500 rounded-full"></span>
+      </div>
+      <span class="text-xs tracking-widest uppercase">root@xeno-sir:~# ./upload_protocol.sh</span>
+      <div></div>
+    </div>
+
+    <div class="p-6 md:p-10">
+      <!-- Header Area -->
+      <div class="flex flex-col md:flex-row items-center justify-between mb-8 border-b border-[#004d09] pb-6">
+        <div class="flex items-center space-x-4 mb-4 md:mb-0">
+          <div class="relative w-16 h-16 border-2 border-[#00ff41] p-1 overflow-hidden"
+            style="box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);">
+            <div class="absolute inset-0 bg-[#00ff41] opacity-20 animate-pulse"></div>
+            <img src="https://i.ibb.co/1YLm9csg/image.jpg" alt="XENO Logo"
+              class="w-full h-full object-cover filter contrast-125">
+          </div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold glitch uppercase tracking-wider" data-text="XENO SIR">XENO SIR
+            </h1>
+            <p class="text-xs text-[#008f11] mt-1">> SECURE DATA TRANSFER PROTOCOL v2.4.1</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Interface -->
+      <div id="upload-panel">
+        <div class="mb-4 text-sm typing-text">> INITIALIZING SECURE UPLOAD STREAM... [OK]</div>
+        <div class="mb-6 text-sm">> AWAITING DATA INPUT...</div>
+
+        <div id="dropzone" class="dropzone rounded p-8 text-center cursor-pointer mb-6 relative overflow-hidden group">
+          <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.txt">
+
+          <div id="dropzone-content" class="flex flex-col items-center justify-center space-y-4">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 text-[#008f11] group-hover:text-[#00ff41] transition-colors" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <div class="uppercase tracking-widest text-[#00ff41] font-bold">Deploy File</div>
+            <p class="text-xs text-[#008f11]">DRAG & DROP OR CLICK TO BROWSE</p>
+            <p class="text-xs opacity-50 mt-2">[ MAX CAPACITY: 100MB ]</p>
+          </div>
+
+          <!-- Selected File Preview -->
+          <div id="file-ready-preview" class="hidden flex flex-col items-center justify-center w-full h-full">
+            <div class="text-[#00ff41] mb-2">> DATA PACKET COMPILING...</div>
+            <div id="selected-filename" class="text-lg font-bold break-all px-4 text-center text-white text-shadow-sm">
+            </div>
+            <div id="selected-filesize" class="text-sm mt-2 text-[#008f11]"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 mt-8">
+          <button id="reset-btn"
+            class="hidden btn-hacker w-full sm:w-1/3 py-3 px-4 text-sm font-bold uppercase transition focus:outline-none">
+            [ ABORT ]
+          </button>
+          <button id="upload-btn"
+            class="opacity-50 cursor-not-allowed btn-hacker w-full py-3 px-4 text-sm font-bold uppercase transition focus:outline-none flex justify-center items-center">
+            <span id="btn-text" class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              EXECUTE UPLOAD
+            </span>
+            <span id="btn-spinner" class="hidden ml-2 animate-spin">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Screen -->
+      <div id="result-panel" class="hidden">
+        <div class="text-[#00ff41] font-bold text-lg mb-6 flex items-center gap-2 border-b border-[#004d09] pb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          > TRANSMISSION SUCCESSFUL
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+
+          <!-- Information Column -->
+          <div class="order-2 md:order-1 space-y-4 text-sm">
+            <table class="w-full text-left">
+              <tbody class="divide-y divide-[#004d09]">
+                <tr class="py-2">
+                  <td class="text-[#008f11] py-3 uppercase text-xs w-1/3">FILE_HSH:</td>
+                  <td class="py-3 font-medium break-all text-gray-300" id="res-name"></td>
+                </tr>
+                <tr class="py-2">
+                  <td class="text-[#008f11] py-3 uppercase text-xs">V0L_SIZE:</td>
+                  <td class="py-3 font-medium text-gray-300" id="res-size"></td>
+                </tr>
+                <tr class="py-2">
+                  <td class="text-[#008f11] py-3 uppercase text-xs">PATH_DIR:</td>
+                  <td class="py-3 font-medium text-gray-300" id="res-path"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="mt-8">
+              <label class="block text-[#008f11] text-xs uppercase mb-2">> NODE_URL SECURED LNK:</label>
+              <div class="relative flex items-center">
+                <input type="text" id="final-url-input" class="w-full link-output p-3 pr-12 rounded-sm" readonly>
+                <button id="copy-btn"
+                  class="absolute right-2 text-[#00ff41] hover:text-white p-2 transition-colors focus:outline-none"
+                  title="Copy to clipboard">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button id="upload-new-btn"
+              class="btn-hacker w-full py-3 mt-6 text-sm font-bold uppercase transition focus:outline-none">
+              > INITIALIZE NEW SESSION
+            </button>
+          </div>
+
+          <!-- Image/File Preview Column -->
+          <div
+            class="order-1 md:order-2 preview-box p-2 bg-[#050505] flex items-center min-h-[250px] justify-center relative overflow-hidden group">
+            <div id="image-preview-container" class="w-full h-full flex items-center justify-center">
+              <img id="uploaded-image-preview" class="max-w-full max-h-[300px] object-contain hidden"
+                style="box-shadow: 0 0 15px rgba(0,255,65,0.1)" />
+
+              <div id="generic-file-preview" class="flex flex-col items-center justify-center hidden opacity-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-xs tracking-widest uppercase">BINARY BLOB [SCANNED]</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer System Status -->
+    <div
+      class="bg-[#0a0a0a] border-t border-[#004d09] p-2 flex flex-col md:flex-row gap-2 justify-between items-center text-[10px] text-[#008f11] uppercase tracking-widest px-6">
+      <div class="flex items-center space-x-2">
+        <span class="animate-pulse w-2 h-2 bg-[#00ff41] rounded-full inline-block"></span>
+        <span>SYS.ON</span>
+      </div>
+      <div class="flex items-center space-x-2 text-center">
+        <span>[ </span>
+        <span>IP: <span id="client-ip" class="text-[#00ff41]">FETCHING...</span></span>
+        <span> | </span>
+        <span>LOC: <span id="client-loc" class="text-[#00ff41]">DISCOVERING...</span></span>
+        <span> ]</span>
+      </div>
+      <div>
+        <span>HOST: INTERNAL_NODE</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // System vars
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const uploadBtn = document.getElementById('upload-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+
+    let currentFile = null;
+    let toastTimeout;
+
+    // Hacker Matrix Rain
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロゴゾドボポヴッン';
+    const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const nums = '0123456789';
+    const alphabet = katakana + latin + nums;
+
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = [];
+    for (let x = 0; x < columns; x++) drops[x] = 1;
+
+    function draw() {
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#0F0';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(draw, 30);
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Helper functions
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function showSysMsg(msg, isError = false) {
+      clearTimeout(toastTimeout);
+      toastMsg.textContent = `> ${msg}`;
+      toast.style.borderColor = isError ? '#ff003c' : '#00ff41';
+      toast.style.color = isError ? '#ff003c' : '#00ff41';
+
+      toast.classList.remove('hidden');
+      // trigger reflow
+      void toast.offsetWidth;
+      toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-[-20px]', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 4000);
+    }
+
+    // Drag and drop logic
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
+      dropzone.addEventListener(e, preventDefaults, false);
+      document.body.addEventListener(e, preventDefaults, false);
+    });
+
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+    ['dragenter', 'dragover'].forEach(e => dropzone.addEventListener(e, () => dropzone.classList.add('dragover'), false));
+    ['dragleave', 'drop'].forEach(e => dropzone.addEventListener(e, () => dropzone.classList.remove('dragover'), false));
+
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', function () {
+      if (this.files.length) handleFile(this.files[0]);
+    });
+
+    function handleFile(file) {
+      if (file.size > 100 * 1024 * 1024) {
+        showSysMsg('ERR: PAYLOAD SIZE EXCEEDS 100MB LIMIT', true);
+        return;
+      }
+
+      currentFile = file;
+      document.getElementById('dropzone-content').classList.add('hidden');
+
+      const filePreview = document.getElementById('file-ready-preview');
+      filePreview.classList.remove('hidden');
+      document.getElementById('selected-filename').textContent = file.name;
+      document.getElementById('selected-filesize').textContent = `[ ${formatSize(file.size)} ]`;
+
+      uploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      resetBtn.classList.remove('hidden');
+      showSysMsg('PAYLOAD SECURED IN MEMORY');
+    }
+
+    resetBtn.addEventListener('click', () => {
+      currentFile = null;
+      fileInput.value = '';
+      document.getElementById('dropzone-content').classList.remove('hidden');
+      document.getElementById('file-ready-preview').classList.add('hidden');
+      uploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      resetBtn.classList.add('hidden');
+    });
+
+    // Upload logic
+    uploadBtn.addEventListener('click', async () => {
+      if (!currentFile) {
+        showSysMsg('ERR: NO PAYLOAD DETECTED IN MEMORY', true);
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      uploadBtn.classList.add('opacity-50');
+      resetBtn.disabled = true;
+      document.getElementById('btn-text').textContent = 'UPLOADING...';
+      document.getElementById('btn-spinner').classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', currentFile);
+
+      try {
+        const response = await fetch('/xenoUpload.php', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showSysMsg('TRANSMISSION COMPLETE');
+
+          document.getElementById('upload-panel').classList.add('hidden');
+          document.getElementById('result-panel').classList.remove('hidden');
+
+          document.getElementById('res-name').textContent = result.name;
+          document.getElementById('res-size').textContent = result.size;
+          document.getElementById('res-path').textContent = result.path;
+          document.getElementById('final-url-input').value = result.url;
+
+          // Image preview logic
+          const imgPreviewContainer = document.getElementById('uploaded-image-preview');
+          const genericPreview = document.getElementById('generic-file-preview');
+
+          if (currentFile.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              imgPreviewContainer.src = e.target.result;
+              imgPreviewContainer.classList.remove('hidden');
+              genericPreview.classList.add('hidden');
+            }
+            reader.readAsDataURL(currentFile);
+          } else {
+            imgPreviewContainer.classList.add('hidden');
+            genericPreview.classList.remove('hidden');
+          }
+        } else {
+          showSysMsg(`ERR: ${result.error || 'SERVER REJECTED PACKET'}`, true);
+          resetUploadState();
+        }
+      } catch (error) {
+        showSysMsg('ERR: CONNECTION LOST DURING TRANSMISSION', true);
+        resetUploadState();
+      }
+    });
+
+    function resetUploadState() {
+      uploadBtn.disabled = false;
+      uploadBtn.classList.remove('opacity-50');
+      resetBtn.disabled = false;
+      document.getElementById('btn-text').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg> EXECUTE UPLOAD';
+      document.getElementById('btn-spinner').classList.add('hidden');
+    }
+
+    document.getElementById('upload-new-btn').addEventListener('click', () => {
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('upload-panel').classList.remove('hidden');
+      resetBtn.click();
+      resetUploadState();
+
+      // Also unrender the image immediately
+      document.getElementById('uploaded-image-preview').src = '';
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const input = document.getElementById('final-url-input');
+      input.select();
+      document.execCommand('copy');
+
+      const copyBtn = document.getElementById('copy-btn');
+      copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#00ff41]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+      showSysMsg('URL COPIED TO CLIPBOARD');
+
+      setTimeout(() => {
+        copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>';
+      }, 3000);
+    });
+
+    // IP and Location Tracker
+    async function trackClientNode() {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+
+        if (data.ip) {
+          document.getElementById('client-ip').textContent = data.ip;
+          document.getElementById('client-loc').textContent = `${data.city}, ${data.country_name}`;
+        } else {
+          document.getElementById('client-ip').textContent = 'UNKNOWN';
+          document.getElementById('client-loc').textContent = 'STEALTH MODE';
+        }
+      } catch (e) {
+        document.getElementById('client-ip').textContent = 'ANONYMOUS';
+        document.getElementById('client-loc').textContent = 'OFF-GRID';
+      }
+    }
+
+    // Init Tracker
+    setTimeout(trackClientNode, 500);
+  </script>
+</body>
+
+</html>
