@@ -5,6 +5,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const axios = require('axios');
 const FormData = require('form-data');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -80,22 +81,40 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
     }
 });
 
-// Proxy route for 'xenocdn' to load images from the public CDN transparently inline
-app.get('/xenocdn/:filename', async (req, res) => {
+// Proxy route for 'xenocdn' to load images and video perfectly transparent
+app.get('/xenocdn/:filename', (req, res) => {
     const filename = req.params.filename;
-    try {
-        const response = await axios({
-            method: 'get',
-            url: `https://files.catbox.moe/${filename}`,
-            responseType: 'stream'
-        });
 
-        // Forward the content type to the browser so it renders as an inline image/file
-        res.setHeader('Content-Type', response.headers['content-type']);
-        response.data.pipe(res);
-    } catch (error) {
-        res.status(404).json({ error: 'File not found on public CDN' });
-    }
+    const proxyHeaders = { ...req.headers };
+    proxyHeaders.host = 'files.catbox.moe'; // crucial to prevent Host mismatch 
+    delete proxyHeaders.origin;
+    delete proxyHeaders.referer;
+
+    const options = {
+        hostname: 'files.catbox.moe',
+        port: 443,
+        path: `/${filename}`,
+        method: 'GET',
+        headers: proxyHeaders
+    };
+
+    const proxyReq = https.request(options, (proxyRes) => {
+        // Discard any attachment dispositions to force inline viewing in browser
+        const resHeaders = { ...proxyRes.headers };
+        if (resHeaders['content-disposition']) {
+            resHeaders['content-disposition'] = 'inline';
+        }
+
+        res.writeHead(proxyRes.statusCode, resHeaders);
+        proxyRes.pipe(res);
+    });
+
+    proxyReq.on('error', (error) => {
+        console.error('Proxy Stream Error:', error.message);
+        res.status(404).json({ error: 'File not found on public CDN or stream died' });
+    });
+
+    req.pipe(proxyReq);
 });
 
 // Fallback route for SPA
