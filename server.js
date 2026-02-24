@@ -80,10 +80,22 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
     }
 });
 
-// Proxy route for 'xenocdn' to load images from the public CDN transparently
+// Proxy route for 'xenocdn' to load images from the public CDN transparently inline
 app.get('/xenocdn/:filename', async (req, res) => {
     const filename = req.params.filename;
-    res.redirect(`https://files.catbox.moe/${filename}`);
+    try {
+        const response = await axios({
+            method: 'get',
+            url: `https://files.catbox.moe/${filename}`,
+            responseType: 'stream'
+        });
+
+        // Forward the content type to the browser so it renders as an inline image/file
+        res.setHeader('Content-Type', response.headers['content-type']);
+        response.data.pipe(res);
+    } catch (error) {
+        res.status(404).json({ error: 'File not found on public CDN' });
+    }
 });
 
 // Fallback route for SPA
