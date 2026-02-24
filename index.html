@@ -420,43 +420,46 @@
           <!-- Image/File Preview Column -->
           <div
             class="order-1 md:order-2 preview-box p-2 bg-[#050505] flex items-center min-h-[250px] justify-center relative overflow-hidden group">
-            <div id="image-preview-container" class="w-full h-full flex items-center justify-center">
+            <div id="image-preview-container" class="w-full h-full flex flex-col items-center justify-center p-2">
               <img id="uploaded-image-preview" class="max-w-full max-h-[300px] object-contain hidden"
                 style="box-shadow: 0 0 15px rgba(0,255,65,0.1)" />
 
-              <div id="generic-file-preview" class="flex flex-col items-center justify-center hidden opacity-50">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p class="text-xs tracking-widest uppercase">BINARY BLOB [SCANNED]</p>
-              </div>
+              <video id="uploaded-video-preview" class="max-w-full max-h-[300px] hidden" controls
+                style="box-shadow: 0 0 15px rgba(0,255,65,0.1)"></video>
+
+              <audio id="uploaded-audio-preview" class="w-full hidden mt-4" controls></audio>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-xs tracking-widest uppercase">BINARY BLOB [SCANNED]</p>
             </div>
           </div>
-
         </div>
-      </div>
-    </div>
 
-    <!-- Footer System Status -->
-    <div
-      class="bg-[#0a0a0a] border-t border-[#004d09] p-2 flex flex-col md:flex-row gap-2 justify-between items-center text-[10px] text-[#008f11] uppercase tracking-widest px-6">
-      <div class="flex items-center space-x-2">
-        <span class="animate-pulse w-2 h-2 bg-[#00ff41] rounded-full inline-block"></span>
-        <span>SYS.ON</span>
-      </div>
-      <div class="flex items-center space-x-2 text-center">
-        <span>[ </span>
-        <span>IP: <span id="client-ip" class="text-[#00ff41]">FETCHING...</span></span>
-        <span> | </span>
-        <span>LOC: <span id="client-loc" class="text-[#00ff41]">DISCOVERING...</span></span>
-        <span> ]</span>
-      </div>
-      <div>
-        <span>HOST: INTERNAL_NODE</span>
       </div>
     </div>
+  </div>
+
+  <!-- Footer System Status -->
+  <div
+    class="bg-[#0a0a0a] border-t border-[#004d09] p-2 flex flex-col md:flex-row gap-2 justify-between items-center text-[10px] text-[#008f11] uppercase tracking-widest px-6">
+    <div class="flex items-center space-x-2">
+      <span class="animate-pulse w-2 h-2 bg-[#00ff41] rounded-full inline-block"></span>
+      <span>SYS.ON</span>
+    </div>
+    <div class="flex items-center space-x-2 text-center">
+      <span>[ </span>
+      <span>IP: <span id="client-ip" class="text-[#00ff41]">FETCHING...</span></span>
+      <span> | </span>
+      <span>LOC: <span id="client-loc" class="text-[#00ff41]">DISCOVERING...</span></span>
+      <span> ]</span>
+    </div>
+    <div>
+      <span>HOST: INTERNAL_NODE</span>
+    </div>
+  </div>
   </div>
 
   <script>
@@ -622,20 +625,40 @@
           document.getElementById('res-path').textContent = result.path;
           document.getElementById('final-url-input').value = result.url;
 
-          // Image preview logic
+          // Media preview logic
           const imgPreviewContainer = document.getElementById('uploaded-image-preview');
+          const vidPreviewContainer = document.getElementById('uploaded-video-preview');
+          const audPreviewContainer = document.getElementById('uploaded-audio-preview');
           const genericPreview = document.getElementById('generic-file-preview');
 
+          // Reset all previews
+          imgPreviewContainer.classList.add('hidden');
+          vidPreviewContainer.classList.add('hidden');
+          audPreviewContainer.classList.add('hidden');
+          genericPreview.classList.add('hidden');
+
+          const reader = new FileReader();
+
           if (currentFile.type.startsWith('image/')) {
-            const reader = new FileReader();
             reader.onload = (e) => {
               imgPreviewContainer.src = e.target.result;
               imgPreviewContainer.classList.remove('hidden');
-              genericPreview.classList.add('hidden');
+            }
+            reader.readAsDataURL(currentFile);
+          } else if (currentFile.type.startsWith('video/')) {
+            reader.onload = (e) => {
+              vidPreviewContainer.src = e.target.result;
+              vidPreviewContainer.classList.remove('hidden');
+            }
+            reader.readAsDataURL(currentFile);
+          } else if (currentFile.type.startsWith('audio/')) {
+            reader.onload = (e) => {
+              audPreviewContainer.src = e.target.result;
+              audPreviewContainer.classList.remove('hidden');
+              genericPreview.classList.remove('hidden'); // Show icon above player
             }
             reader.readAsDataURL(currentFile);
           } else {
-            imgPreviewContainer.classList.add('hidden');
             genericPreview.classList.remove('hidden');
           }
         } else {
@@ -662,8 +685,10 @@
       resetBtn.click();
       resetUploadState();
 
-      // Also unrender the image immediately
+      // Also unrender the media instantly
       document.getElementById('uploaded-image-preview').src = '';
+      document.getElementById('uploaded-video-preview').src = '';
+      document.getElementById('uploaded-audio-preview').src = '';
     });
 
     document.getElementById('copy-btn').addEventListener('click', () => {
