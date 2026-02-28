@@ -69,7 +69,8 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
         const catboxFilename = publicUrl.split('/').pop();
 
         // Wrap the real link in our custom tracker namespace 'xenocdn' and serve it using express
-        const fileUrl = `${req.protocol}://${req.get('host')}/xenocdn/${catboxFilename}`;
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const fileUrl = `${protocol}://${req.get('host')}/xenocdn/${catboxFilename}`;
 
         res.json({
             success: true,
