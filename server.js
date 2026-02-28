@@ -60,7 +60,12 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
         });
 
         // Catbox returns the raw URL containing the file hash (e.g. https://files.catbox.moe/1234.jpg)
-        const publicUrl = response.data;
+        const publicUrl = response.data.trim();
+
+        if (!publicUrl.includes('catbox.moe')) {
+            throw new Error(`Catbox API error: ${publicUrl}`);
+        }
+
         const catboxFilename = publicUrl.split('/').pop();
 
         // Wrap the real link in our custom tracker namespace 'xenocdn' and serve it using express
@@ -114,7 +119,11 @@ app.get('/xenocdn/:filename', (req, res) => {
         res.status(404).json({ error: 'File not found on public CDN or stream died' });
     });
 
-    req.pipe(proxyReq);
+    if (req.method === 'GET') {
+        proxyReq.end();
+    } else {
+        req.pipe(proxyReq);
+    }
 });
 
 // Fallback route for SPA
