@@ -47,10 +47,14 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
         const { originalname, size, path: filePath } = req.file;
 
+        // Generate a very short random filename to keep the URL compact
+        const ext = path.extname(originalname);
+        const shortName = Math.random().toString(36).substring(2, 6) + ext;
+
         // Migrate back to tmpfiles.org since it doesn't block extensions or MIME types randomly
         const form = new FormData();
         form.append('file', fs.createReadStream(filePath), {
-            filename: req.file.originalname,
+            filename: shortName,
             contentType: req.file.mimetype,
             knownLength: req.file.size
         });
@@ -66,10 +70,10 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
         // tmpfiles returns { data: { url: "https://tmpfiles.org/XYZ/file.ext" } }
         const rawUrl = cdnResponse.data.data.url;
         const urlIdPart = rawUrl.split('tmpfiles.org/')[1]; // extracts XYZ/file.ext
-        
+
         // Generate a URL that starts precisely with the user's host domain
         const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-        const finalUrl = `${protocol}://${req.get('host')}/xeno/${urlIdPart}`;
+        const finalUrl = `${protocol}://${req.get('host')}/x/${urlIdPart}`;
 
         // Cleanup local file after upload
         if (fs.existsSync(filePath)) {
@@ -79,7 +83,7 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
         res.json({
             name: originalname,
             size: formatSize(size),
-            path: `cdn-nodes/${originalname}`, 
+            path: `cdn-nodes/${originalname}`,
             url: finalUrl
         });
     } catch (error) {
@@ -88,12 +92,12 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
             errorReason = typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data);
         }
         console.error('Transmission error:', errorReason);
-        
+
         // Cleanup on failure
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
-        
+
         res.status(500).json({ error: `CDN NODE ERROR: ${errorReason}` });
     }
 });
