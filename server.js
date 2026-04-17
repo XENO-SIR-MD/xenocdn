@@ -11,11 +11,10 @@ const PORT = process.env.PORT || 3000;
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
-// Set up local storage for temporarily holding the file before forwarding to Catbox
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+const os = require('os');
+
+// Set up local storage in the system temp directory (read-only filesystem bypass for Vercel)
+const uploadDir = os.tmpdir();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -88,6 +87,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`[ XENO SIR PROTOCOL ACTIVE ] - Server running on port ${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`[ XENO SIR PROTOCOL ACTIVE ] - Server running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
