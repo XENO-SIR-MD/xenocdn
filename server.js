@@ -47,15 +47,15 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
         const { originalname, size, path: filePath } = req.file;
 
-        // Migrate to tmpfiles.org since Pomf is currently shut down.
+        // Migrate to permanent bot-friendly CDN qu.ax
         const form = new FormData();
-        form.append('file', fs.createReadStream(filePath), {
+        form.append('files[]', fs.createReadStream(filePath), {
             filename: req.file.originalname,
             contentType: req.file.mimetype,
             knownLength: req.file.size
         });
 
-        const tmpResponse = await axios.post('https://tmpfiles.org/api/v1/upload', form, {
+        const cdnResponse = await axios.post('https://qu.ax/upload.php', form, {
             headers: {
                 ...form.getHeaders()
             },
@@ -63,9 +63,9 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
             maxContentLength: Infinity
         });
 
-        // tmpfiles returns { data: { url: "https://tmpfiles.org/XYZ/file.ext" } }
-        const rawUrl = tmpResponse.data.data.url;
-        const urlIdPart = rawUrl.split('tmpfiles.org/')[1]; // extracts XYZ/file.ext
+        // qu.ax returns { files: [{ url: "https://qu.ax/XYZ.ext" }] }
+        const rawUrl = cdnResponse.data.files[0].url;
+        const urlIdPart = rawUrl.split('qu.ax/')[1]; // extracts XYZ.ext
         
         // Generate a URL that starts precisely with the user's host domain
         const protocol = req.headers['x-forwarded-proto'] || req.protocol;
@@ -100,12 +100,6 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Dynamic route to handle their masked domain link and anonymously redirect it to the actual file CDN 
-app.get('/xeno/:id/:filename', (req, res) => {
-    const { id, filename } = req.params;
-    res.redirect(`https://tmpfiles.org/dl/${id}/${filename}`);
 });
 
 if (require.main === module) {
