@@ -47,16 +47,15 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
         const { originalname, size, path: filePath } = req.file;
 
-        // Use Catbox.moe as the CDN backend, as proxying is standard for these replicate CDNs
+        // Migrate from Catbox to Pomf.lain.la due to Catbox anonymous IP block restrictions
         const form = new FormData();
-        form.append('reqtype', 'fileupload');
-        form.append('fileToUpload', fs.createReadStream(filePath), {
+        form.append('files[]', fs.createReadStream(filePath), {
             filename: req.file.originalname,
             contentType: req.file.mimetype,
             knownLength: req.file.size
         });
 
-        const catboxResponse = await axios.post('https://catbox.moe/user/api.php', form, {
+        const pomfResponse = await axios.post('https://pomf.lain.la/upload.php', form, {
             headers: {
                 ...form.getHeaders()
             },
@@ -64,7 +63,7 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
             maxContentLength: Infinity
         });
 
-        const finalUrl = catboxResponse.data.trim();
+        const finalUrl = pomfResponse.data.files[0].url;
 
         // Cleanup local file after upload
         if (fs.existsSync(filePath)) {
