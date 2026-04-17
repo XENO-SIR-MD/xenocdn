@@ -47,15 +47,15 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
         const { originalname, size, path: filePath } = req.file;
 
-        // Migrate from Catbox to Pomf.lain.la due to Catbox anonymous IP block restrictions
+        // Migrate to tmpfiles.org since Pomf is currently shut down.
         const form = new FormData();
-        form.append('files[]', fs.createReadStream(filePath), {
+        form.append('file', fs.createReadStream(filePath), {
             filename: req.file.originalname,
             contentType: req.file.mimetype,
             knownLength: req.file.size
         });
 
-        const pomfResponse = await axios.post('https://pomf.lain.la/upload.php', form, {
+        const tmpResponse = await axios.post('https://tmpfiles.org/api/v1/upload', form, {
             headers: {
                 ...form.getHeaders()
             },
@@ -63,7 +63,9 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
             maxContentLength: Infinity
         });
 
-        const finalUrl = pomfResponse.data.files[0].url;
+        // tmpfiles returns { data: { url: "https://tmpfiles.org/XYZ/file.ext" } }
+        // We modify the URL slightly to return the direct raw file download link by injecting /dl/
+        const finalUrl = tmpResponse.data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
 
         // Cleanup local file after upload
         if (fs.existsSync(filePath)) {
