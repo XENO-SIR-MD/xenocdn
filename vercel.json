@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/xeno/(.*)",
-      "destination": "https://qu.ax/$1"
+      "destination": "https://tmpfiles.org/dl/$1"
     },
     {
       "source": "/(.*)",
