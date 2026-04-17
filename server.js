@@ -50,12 +50,18 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
         // Use Catbox.moe as the CDN backend, as proxying is standard for these replicate CDNs
         const form = new FormData();
         form.append('reqtype', 'fileupload');
-        form.append('fileToUpload', fs.createReadStream(filePath));
+        form.append('fileToUpload', fs.createReadStream(filePath), {
+            filename: req.file.originalname,
+            contentType: req.file.mimetype,
+            knownLength: req.file.size
+        });
 
         const catboxResponse = await axios.post('https://catbox.moe/user/api.php', form, {
             headers: {
                 ...form.getHeaders()
-            }
+            },
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity
         });
 
         const finalUrl = catboxResponse.data.trim();
@@ -72,14 +78,18 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
             url: finalUrl
         });
     } catch (error) {
-        console.error('Transmission error:', error.message);
+        let errorReason = error.message;
+        if (error.response && error.response.data) {
+            errorReason = typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data);
+        }
+        console.error('Transmission error:', errorReason);
         
         // Cleanup on failure
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
         
-        res.status(500).json({ error: 'CDN NODE UNREACHABLE / UPLOAD FAILED' });
+        res.status(500).json({ error: `CDN NODE ERROR: ${errorReason}` });
     }
 });
 
