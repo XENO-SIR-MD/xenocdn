@@ -64,8 +64,12 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
         });
 
         // tmpfiles returns { data: { url: "https://tmpfiles.org/XYZ/file.ext" } }
-        // We modify the URL slightly to return the direct raw file download link by injecting /dl/
-        const finalUrl = tmpResponse.data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        const rawUrl = tmpResponse.data.data.url;
+        const urlIdPart = rawUrl.split('tmpfiles.org/')[1]; // extracts XYZ/file.ext
+        
+        // Generate a URL that starts precisely with the user's host domain
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const finalUrl = `${protocol}://${req.get('host')}/xeno/${urlIdPart}`;
 
         // Cleanup local file after upload
         if (fs.existsSync(filePath)) {
@@ -96,6 +100,12 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Dynamic route to handle their masked domain link and anonymously redirect it to the actual file CDN 
+app.get('/xeno/:id/:filename', (req, res) => {
+    const { id, filename } = req.params;
+    res.redirect(`https://tmpfiles.org/dl/${id}/${filename}`);
 });
 
 if (require.main === module) {
