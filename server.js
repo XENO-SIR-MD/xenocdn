@@ -47,15 +47,15 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
 
         const { originalname, size, path: filePath } = req.file;
 
-        // Migrate to permanent bot-friendly CDN qu.ax
+        // Migrate back to tmpfiles.org since it doesn't block extensions or MIME types randomly
         const form = new FormData();
-        form.append('files[]', fs.createReadStream(filePath), {
+        form.append('file', fs.createReadStream(filePath), {
             filename: req.file.originalname,
             contentType: req.file.mimetype,
             knownLength: req.file.size
         });
 
-        const cdnResponse = await axios.post('https://qu.ax/upload.php', form, {
+        const cdnResponse = await axios.post('https://tmpfiles.org/api/v1/upload', form, {
             headers: {
                 ...form.getHeaders()
             },
@@ -63,9 +63,9 @@ app.post('/xenoUpload.php', upload.single('file'), async (req, res) => {
             maxContentLength: Infinity
         });
 
-        // qu.ax returns { files: [{ url: "https://qu.ax/XYZ.ext" }] }
-        const rawUrl = cdnResponse.data.files[0].url;
-        const urlIdPart = rawUrl.split('qu.ax/')[1]; // extracts XYZ.ext
+        // tmpfiles returns { data: { url: "https://tmpfiles.org/XYZ/file.ext" } }
+        const rawUrl = cdnResponse.data.data.url;
+        const urlIdPart = rawUrl.split('tmpfiles.org/')[1]; // extracts XYZ/file.ext
         
         // Generate a URL that starts precisely with the user's host domain
         const protocol = req.headers['x-forwarded-proto'] || req.protocol;
