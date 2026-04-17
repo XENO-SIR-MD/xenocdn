@@ -8,6 +8,10 @@
   ],
   "rewrites": [
     {
+      "source": "/x/(.*)",
+      "destination": "https://tmpfiles.org/dl/$1"
+    },
+    {
       "source": "/xeno/(.*)",
       "destination": "https://tmpfiles.org/dl/$1"
     },
